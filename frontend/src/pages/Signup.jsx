@@ -1,8 +1,31 @@
 import React from 'react'
 import Navbar from '../components/Navbar'
 import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
+import { useState } from 'react'
+import { toast } from 'react-toastify'
+import { useForm } from 'react-hook-form'
+import { signup } from '../services/userService.js'
 
 function Signup() {
+  const navigate = useNavigate()
+  const { signup } = useAuth()
+  const [loading, setLoading] = useState(false)
+  const { register, handleSubmit } = useForm()
+
+  const onSubmit = async (data) => {
+    setLoading(true)
+    try {
+      await signup(data.name, data.email, data.password)
+      navigate('/dashboard')
+    } catch (error) {
+      toast.error(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col">
       <Navbar />

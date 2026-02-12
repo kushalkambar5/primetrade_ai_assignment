@@ -1,8 +1,31 @@
 import React from 'react'
 import Navbar from '../components/Navbar'
 import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
+import { useState } from 'react'
+import { toast } from 'react-toastify'
+import { useForm } from 'react-hook-form'
+import { login } from '../services/userService.js'
 
 function Login() {
+  const navigate = useNavigate()
+  const { login } = useAuth()
+  const [loading, setLoading] = useState(false)
+  const { register, handleSubmit } = useForm()
+
+  const onSubmit = async (data) => {
+    setLoading(true)
+    try {
+      await login(data.email, data.password)
+      navigate('/dashboard')
+    } catch (error) {
+      toast.error(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col">
       <Navbar />
@@ -11,7 +34,7 @@ function Login() {
           <h2 className="text-3xl font-bold text-center mb-6 text-blue-500">Welcome Back</h2>
           <p className="text-gray-400 text-center mb-8">Login to your PrimeTradeAI account</p>
           
-          <form className='flex flex-col gap-6'>
+          <form className='flex flex-col gap-6' onSubmit={handleSubmit(onSubmit)}>
             <div>
               <label className="block text-gray-400 text-sm font-bold mb-2" htmlFor="email">
                 Email Address
@@ -19,7 +42,8 @@ function Login() {
               <input 
                 id="email"
                 type="email" 
-                placeholder="you@example.com" 
+                placeholder="you@example.com"
+                {...register("email", { required: "Email is required" })}
                 className='w-full bg-gray-700 border border-gray-600 text-white p-3 rounded focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition duration-200' 
               />
             </div>
@@ -31,7 +55,8 @@ function Login() {
               <input 
                 id="password"
                 type="password" 
-                placeholder="••••••••" 
+                placeholder="••••••••"
+                {...register("password", { required: "Password is required" })}
                 className='w-full bg-gray-700 border border-gray-600 text-white p-3 rounded focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition duration-200' 
               />
             </div>
@@ -52,9 +77,10 @@ function Login() {
 
             <button 
               type="submit" 
-              className='w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded transition duration-200 transform hover:scale-[1.02]'
+              disabled={loading}
+              className='w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded transition duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed'
             >
-              Log In
+              {loading ? 'Logging in...' : 'Log In'}
             </button>
           </form>
 

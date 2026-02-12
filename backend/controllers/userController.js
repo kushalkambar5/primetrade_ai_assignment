@@ -1,6 +1,7 @@
 import User from "../models/userModel.js";
 import HandleError from "../utils/HandleError.js";
 import handleAsyncError from "../middlewares/handleAsyncError.js";
+import sendToken from "../utils/jwtToken.js";
 
 //Signup
 export const registerUser = handleAsyncError(async (req, res, next) => {
@@ -12,10 +13,7 @@ export const registerUser = handleAsyncError(async (req, res, next) => {
 
   const user = await User.create({ name, email, password });
 
-  res.status(201).json({
-    success: true,
-    user,
-  });
+  sendToken(user, 201, res);
 });
 
 //Login
@@ -38,10 +36,7 @@ export const loginUser = handleAsyncError(async (req, res, next) => {
     return next(new HandleError("Invalid password", 401));
   }
 
-  res.status(200).json({
-    success: true,
-    user,
-  });
+  sendToken(user, 200, res);
 });
 
 //Logout

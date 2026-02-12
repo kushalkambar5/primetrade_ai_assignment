@@ -31,7 +31,7 @@ export const getAllTasks = handleAsyncError(async (req, res, next) => {
 
 //get task
 export const getTask = handleAsyncError(async (req, res, next) => {
-  const task = await Task.findById(req.params.id).populate("user");
+  const task = await Task.findOne({ _id: req.params.id, user: req.user._id });
 
   if (!task) {
     return next(new HandleError("Task not found", 404));
@@ -45,16 +45,17 @@ export const getTask = handleAsyncError(async (req, res, next) => {
 
 //update task
 export const updateTask = handleAsyncError(async (req, res, next) => {
-  const task = await Task.findById(req.params.id).populate("user");
+  let task = await Task.findOne({ _id: req.params.id, user: req.user._id });
 
   if (!task) {
     return next(new HandleError("Task not found", 404));
   }
 
-  task.title = req.body.title;
-  task.description = req.body.description;
-
-  await task.save();
+  task = await Task.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+    useFindAndModify: false,
+  });
 
   res.status(200).json({
     success: true,
@@ -64,16 +65,16 @@ export const updateTask = handleAsyncError(async (req, res, next) => {
 
 //delete task
 export const deleteTask = handleAsyncError(async (req, res, next) => {
-  const task = await Task.findById(req.params.id).populate("user");
+  const task = await Task.findOne({ _id: req.params.id, user: req.user._id });
 
   if (!task) {
     return next(new HandleError("Task not found", 404));
   }
 
-  await task.remove();
+  await task.deleteOne();
 
   res.status(200).json({
     success: true,
-    task,
+    message: "Task Deleted Successfully",
   });
 });
